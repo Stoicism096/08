@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>老年认知训练 - 记忆数字游戏</title>
+    <script src="https://cdn.tailwindcss.com/3.3.3"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f8f4e9;
+            color: #4a4a4a;
+            font-size: 18px;
+        }
+        
+        .elderly-card {
+            background-color: #fff9f0;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e8d9b5;
+            transition: all 0.3s ease;
+        }
+        
+        .elderly-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+        }
+        
+        .elderly-btn {
+            background-color: #8db596;
+            color: white;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-size: 18px;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .elderly-btn:hover {
+            background-color: #7aa384;
+            transform: scale(1.05);
+        }
+        
+        .elderly-primary {
+            color: #5a7247;
+        }
+        
+        .elderly-secondary {
+            color: #8db596;
+        }
+        
+        .elderly-highlight {
+            background-color: rgba(141, 181, 150, 0.2);
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+        
+        .game-icon {
+            width: 60px;
+            height: 60px;
+            background-color: #8db596;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            margin-right: 16px;
+        }
+        
+        .progress-bar {
+            height: 12px;
+            background-color: #e8d9b5;
+            border-radius: 6px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #8db596;
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+        
+        .game-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid #e8d9b5;
+        }
+        
+        .match-card {
+            width: 120px;
+            height: 120px;
+            background-color: #fff9f0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e8d9b5;
+            font-size: 24px;
+        }
+        
+        .match-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .match-card.selected {
+            border-color: #8db596;
+            background-color: rgba(141, 181, 150, 0.1);
+        }
+        
+        .match-card.matched {
+            border-color: #5a7247;
+            background-color: rgba(90, 114, 71, 0.1);
+        }
+        
+        .number-input {
+            width: 80px;
+            height: 60px;
+            font-size: 24px;
+            text-align: center;
+            border: 2px solid #e8d9b5;
+            border-radius: 12px;
+            background-color: #fff9f0;
+        }
+        
+        .color-option {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.selected {
+            border-color: #5a7247;
+            box-shadow: 0 0 0 3px rgba(90, 114, 71, 0.3);
+        }
+        
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+        
+        .memory-card {
+            width: 100%;
+            height: 100px;
+            background-color: #fff9f0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e8d9b5;
+            font-size: 24px;
+        }
+        
+        .memory-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .memory-card.flipped {
+            background-color: #8db596;
+            color: white;
+        }
+        
+        .memory-card.matched {
+            background-color: #5a7247;
+            color: white;
+        }
+        
+        .reward-badge {
+            width: 50px;
+            height: 50px;
+            background-color: #8db596;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            margin-right: 12px;
+        }
+        
+        @media (max-width: 768px) {
+            .memory-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .match-card {
+                width: 80px;
+                height: 80px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-md py-4 px-6 sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <i class="fas fa-brain text-3xl elderly-primary mr-3"></i>
+                <h1 class="text-2xl font-bold elderly-primary">老年认知训练</h1>
+            </div>
+            <div class="flex items-center">
+                <div class="mr-6">
+                    <span class="text-lg elderly-primary">欢迎, </span>
+                    <span class="text-lg font-semibold elderly-secondary">张爷爷</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="reward-badge">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <span class="text-xl font-bold elderly-primary">125</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto py-8 px-4">
+        <!-- 进度和关卡 -->
+        <div class="elderly-card p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold elderly-primary">您的训练进度</h2>
+                <div class="text-xl elderly-secondary">
+                    <span class="font-bold">第</span>
+                    <span class="font-bold mx-2">3</span>
+                    <span class="font-bold">关</span>
+                </div>
+            </div>
+            <div class="progress-bar mb-2">
+                <div class="progress-fill" style="width: 45%"></div>
+            </div>
+            <div class="flex justify-between text-lg">
+                <span class="elderly-primary">已完成: 45%</span>
+                <span class="elderly-secondary">下一关奖励: 30积分</span>
+            </div>
+        </div>
+
+        <!-- 游戏选择 -->
+        <h2 class="text-2xl font-bold elderly-primary mb-6">选择训练游戏</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <!-- 记忆数字游戏 -->
+            <div class="elderly-card p-6">
+                <div class="flex items-center mb-4">
+                    <div class="game-icon">
+                        <i class="fas fa-memory"></i>
+                    </div>
+                    <h3 class="text-xl font-bold elderly-primary">记忆数字游戏</h3>
+                </div>
+                <img src="https://s.coze.cn/t/OuxNvXdosTE/" alt="记忆数字游戏" class="game-image mb-4">
+                <p class="text-gray-600 mb-4">记住展示的数字顺序，然后按顺序选择正确的数字。</p>
+                <button class="elderly-btn w-full" onclick="startMemoryNumberGame()">
+                    <i class="fas fa-play mr-2"></i>开始游戏
+                </button>
+            </div>
+        </div>
+
+        <!-- 记忆数字游戏区域 -->
+        <div id="memoryNumberGameArea" class="elderly-card p-6 hidden">
+            <h3 class="text-2xl font-bold elderly-primary mb-6">记忆数字游戏</h3>
+            <div class="memory-grid" id="memoryNumberGrid">
+                <!-- 这里将动态生成卡片 -->
+            </div>
+            <button class="elderly-btn mt-8" onclick="resetMemoryNumberGame()">重置游戏</button>
+        </div>
+    </main>
+    <script>
+        // 获取游戏容器元素
+        const memoryNumberGrid = document.getElementById('memoryNumberGrid');
+        // 定义数字数组，生成6对随机数字
+        const numbers = [];
+        for (let i = 1; i <= 6; i++) {
+            numbers.push(i);
+            numbers.push(i);
+        }
+        // 打乱数字顺序
+        numbers.sort(() => 0.5 - Math.random());
+        // 记录翻开的卡片
+        let flippedCards = [];
+        // 记录匹配的卡片对数量
+        let matchedPairs = 0;
+
+        // 创建卡片元素并添加到游戏容器中
+        function createMemoryNumberCards() {
+            numbers.forEach((number, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('memory-card');
+                cardElement.dataset.index = index;
+                // 卡片正面元素
+                const frontFace = document.createElement('div');
+                frontFace.classList.add('front-face');
+                frontFace.textContent = number;
+                // 卡片背面元素
+                const backFace = document.createElement('div');
+                backFace.classList.add('back-face');
+                // 将正面和背面元素添加到卡片中
+                cardElement.appendChild(frontFace);
+                cardElement.appendChild(backFace);
+                // 为卡片添加点击事件监听器
+                cardElement.addEventListener('click', flipMemoryNumberCard);
+                // 将卡片添加到游戏容器中
+                memoryNumberGrid.appendChild(cardElement);
+            });
+        }
+
+        // 翻转卡片函数
+        function flipMemoryNumberCard() {
+            if (flippedCards.length < 2 && !this.classList.contains('flipped')) {
+                this.classList.add('flipped');
+                flippedCards.push(this);
+                if (flippedCards.length === 2) {
+                    setTimeout(checkMemoryNumberMatch, 1000);
+                }
+            }
+        }
+
+        // 检查卡片是否匹配函数
+        function checkMemoryNumberMatch() {
+            const [card1, card2] = flippedCards;
+            const num1 = card1.querySelector('.front-face').textContent;
+            const num2 = card2.querySelector('.front-face').textContent;
+            if (num1 === num2) {
+                // 卡片匹配，移除点击事件监听器
+                card1.removeEventListener('click', flipMemoryNumberCard);
+                card2.removeEventListener('click', flipMemoryNumberCard);
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                flippedCards = [];
+                matchedPairs++;
+                // 检查是否所有卡片都匹配
+                if (matchedPairs === numbers.length / 2) {
+                    alert('恭喜你，游戏胜利！');
+                }
+            } else {
+                // 卡片不匹配，翻转回去
+                card1.classList.remove('flipped');
+                card2.classList.remove('flipped');
+                flippedCards = [];
+            }
+        }
+
+        // 开始记忆数字游戏
+        function startMemoryNumberGame() {
+            const memoryNumberGameArea = document.getElementById('memoryNumberGameArea');
+            memoryNumberGameArea.classList.remove('hidden');
+            createMemoryNumberCards();
+        }
+
+        // 重置记忆数字游戏
+        function resetMemoryNumberGame() {
+            memoryNumberGrid.innerHTML = '';
+            numbers.sort(() => 0.5 - Math.random());
+            flippedCards = [];
+            matchedPairs = 0;
+            createMemoryNumberCards();
+        }
+    </script>
+</body>
+</html>
